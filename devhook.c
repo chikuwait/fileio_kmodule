@@ -19,18 +19,23 @@ static int chardev_close(struct inode *inode, struct file *filep)
 }
 
 
-ssize_t chardev_read(struct file *p, char __user *usr, size_t size, loff_t *loff)
+static ssize_t chardev_read(struct file *p, char __user *usr, size_t size, loff_t *loff)
 {
 	printk(KERN_INFO "Device read\n");
-	return 0;
+
+	if(size > NUM_BUFFER) size = NUM_BUFFER;
+	if(copy_to_user(usr, stored_value, size) != 0){
+		return -EFAULT;
+	}
+	return size;
 }
 
-ssize_t chardev_write(struct file *p, const char __user *usr, size_t size, loff_t *loff)
+static ssize_t chardev_write(struct file *p, const char __user *usr, size_t size, loff_t *loff)
 {
 	printk(KERN_INFO "Device write\n");
 
-	if(copy_from_user(stored_value,usr,size) != 0){
-		return -1;
+	if(copy_from_user(stored_value, usr, size) != 0){
+		return -EFAULT;
 	}
 	printk("%s\n", stored_value);
 	return size;

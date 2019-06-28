@@ -1,7 +1,10 @@
 #include <linux/init.h>
 #include <linux/fs.h>
 #include <linux/cdev.h>
+#include <linux/uaccess.h>
 #include <linux/module.h>
+#define NUM_BUFFER 256
+static char stored_value[NUM_BUFFER];
 
 static int chardev_open(struct inode *inode, struct file *filep)
 {
@@ -25,7 +28,12 @@ ssize_t chardev_read(struct file *p, char __user *usr, size_t size, loff_t *loff
 ssize_t chardev_write(struct file *p, const char __user *usr, size_t size, loff_t *loff)
 {
 	printk(KERN_INFO "Device write\n");
-	return 0;
+
+	if(copy_from_user(stored_value,usr,size) != 0){
+		return -1;
+	}
+	printk("%s\n", stored_value);
+	return size;
 }
 
 static struct file_operations chardev_fops = {

@@ -4,7 +4,7 @@
 #include <linux/uaccess.h>
 #include <linux/module.h>
 #define NUM_BUFFER 256
-static char stored_value[NUM_BUFFER];
+static char stored_value[NUM_BUFFER] = "Hello,";
 
 static int chardev_open(struct inode *inode, struct file *filep)
 {
@@ -34,7 +34,7 @@ static ssize_t chardev_write(struct file *p, const char __user *usr, size_t size
 {
 	printk(KERN_INFO "Device write\n");
 
-	if(copy_from_user(stored_value, usr, size) != 0){
+	if(copy_from_user(stored_value+6, usr, size) != 0){
 		return -EFAULT;
 	}
 	printk("%s\n", stored_value);
@@ -53,7 +53,7 @@ static struct file_operations chardev_fops = {
 static int __init hook_init(void)
 {
 	struct cdev *cdev;
-	dev_t dev =MKDEV(240,0);
+	dev_t dev = MKDEV(240,0);
 
 	register_chrdev_region(dev, 1, "hello");
 	cdev = cdev_alloc();

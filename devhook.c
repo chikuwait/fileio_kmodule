@@ -1,8 +1,8 @@
-#include <linux/init.h>
-#include <linux/fs.h>
 #include <linux/cdev.h>
-#include <linux/uaccess.h>
+#include <linux/fs.h>
+#include <linux/init.h>
 #include <linux/module.h>
+#include <linux/uaccess.h>
 #define NUM_BUFFER 256
 static char stored_value[NUM_BUFFER] = "Hello,";
 
@@ -18,23 +18,25 @@ static int chardev_close(struct inode *inode, struct file *filep)
 	return 0;
 }
 
-
-static ssize_t chardev_read(struct file *p, char __user *usr, size_t size, loff_t *loff)
+static ssize_t chardev_read(struct file *p, char __user *usr, size_t size,
+			    loff_t *loff)
 {
 	printk(KERN_INFO "Device read\n");
 
-	if(size > NUM_BUFFER) size = NUM_BUFFER;
-	if(copy_to_user(usr, stored_value, size) != 0){
+	if (size > NUM_BUFFER)
+		size = NUM_BUFFER;
+	if (copy_to_user(usr, stored_value, size) != 0) {
 		return -EFAULT;
 	}
 	return size;
 }
 
-static ssize_t chardev_write(struct file *p, const char __user *usr, size_t size, loff_t *loff)
+static ssize_t chardev_write(struct file *p, const char __user *usr,
+			     size_t size, loff_t *loff)
 {
 	printk(KERN_INFO "Device write\n");
 
-	if(copy_from_user(stored_value+6, usr, size) != 0){
+	if (copy_from_user(stored_value + 6, usr, size) != 0) {
 		return -EFAULT;
 	}
 	printk("%s\n", stored_value);
@@ -49,11 +51,10 @@ static struct file_operations chardev_fops = {
     .write = chardev_write,
 };
 
-
 static int __init hook_init(void)
 {
 	struct cdev *cdev;
-	dev_t dev = MKDEV(240,0);
+	dev_t dev = MKDEV(240, 0);
 
 	register_chrdev_region(dev, 1, "hello");
 	cdev = cdev_alloc();
@@ -65,7 +66,7 @@ static int __init hook_init(void)
 static void __exit hook_exit(void)
 {
 	printk(KERN_INFO "Bye World\n");
-	return ;
+	return;
 }
 
 module_init(hook_init);
